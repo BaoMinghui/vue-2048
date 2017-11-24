@@ -3,19 +3,22 @@
   <div class="time">{{time}}</div>
   <div class="score">{{score}}</div>
   <div>
-    <button @click="startGame()">restart</button>
+    <button @click="startGame">restart</button>
   </div>
   <br>
   <div class="box" @keyup.up="move('up')">
     <div id="start" v-show='start'>
-      <button @click='startGame()'>start</button>
+      <button @click='startGame'>start</button>
     </div>
     <div id="gameover" v-show='gameOver'>
       <h1>Game Over</h1>
-      <button @click='startGame()'>tryAgain</button>
+      <button @click='startGame'>tryAgain</button>
     </div>
     <transition-group name="num-list" tag="div">
-      <span class="num" v-for="item in gamedata" :class="'tile-'+item.value" :style="{top:item.y*100+'px',left:item.x*100+'px'}" :key="item.key">{{item.value}}</span>
+      <span class="num"
+      v-for="item in gamedata"
+      :class="['tile-'+item.value,{big:item.add}]"
+      :style="{top:item.y*100+'px',left:item.x*100+'px'}" :key="item.key">{{item.value}}</span>
     </transition-group>
   </div>
 </div>
@@ -69,8 +72,11 @@ export default {
       })
 
       return temporary
-    }
+    },
+
+
   },
+
 
   methods: {
 
@@ -78,7 +84,7 @@ export default {
       this.key = 0;
       this.start = false;
       this.gameOver = false;
-      this.source = 0;
+      this.score = 0;
       this.gamedata = [];
       this.time = 0;
       clearInterval(this.timer);
@@ -90,16 +96,6 @@ export default {
       this.addData();
     },
 
-    reset: function() {
-      this.gamedata = [],
-        this.start = true,
-        this.score = 0,
-        this.time = 0,
-        this.direct = '',
-        this.gameOver = false,
-        clearInterval(this.timer);
-      window.removeEventListener("keydown", this.KeyEventListener)
-    },
 
     //keydown事件
     KeyEventListener: function(event) {
@@ -137,7 +133,8 @@ export default {
           x: _x,
           y: _y,
           value: _value,
-          key: this.key += 1
+          key: this.key += 1,
+          add:false
         })
       } else {
         this.addData()
@@ -292,6 +289,12 @@ export default {
       }
     },
 
+    addAnima: function(item){
+      item.add = true;
+      setTimeout(()=>{
+        item.add = false;
+      },100);
+    },
     //合并相同值
     eliminate: function(dir) {
       let eliminate_flag = false;
@@ -307,6 +310,7 @@ export default {
                   item[i + 1].x = item[i].x;
                   item[i + 1].y = item[i].y;
                   item[i].value *= 2;
+                  this.addAnima(item[i]);
                   this.score += item[i].value;
                   this.gamedata.splice(index, 1);
                   eliminate_flag = true;
@@ -328,6 +332,7 @@ export default {
                   item[i - 1].x = item[i].x;
                   item[i - 1].y = item[i].y;
                   item[i].value *= 2;
+                  this.addAnima(item[i]);
                   this.score += item[i].value;
                   this.gamedata.splice(index, 1);
                   eliminate_flag = true;
@@ -350,6 +355,7 @@ export default {
                   item[i + 1].x = item[i].x;
                   item[i + 1].y = item[i].y;
                   item[i].value *= 2;
+                  this.addAnima(item[i]);
                   this.score += item[i].value;
                   this.gamedata.splice(index, 1);
                   eliminate_flag = true;
@@ -372,6 +378,7 @@ export default {
                   item[i - 1].x = item[i].x;
                   item[i - 1].y = item[i].y;
                   item[i].value *= 2;
+                  this.addAnima(item[i]);
                   this.score += item[i].value;
                   this.gamedata.splice(index, 1);
                   eliminate_flag = true;
@@ -441,7 +448,7 @@ export default {
   height: 35px;
   width: 100px;
   border-radius: 5px;
-  background-color: #29CEEA;
+  background-color: #ccc;
   display: inline-block;
   text-align: center;
   font-size: 28px;
@@ -476,6 +483,10 @@ export default {
   border: 5px solid #776e65;
 }
 
+.big {
+  animation: bigger .1s;
+}
+
 .num-list-move {
   transition: all 0.1s;
 }
@@ -491,7 +502,17 @@ export default {
   }
 
   100% {
+    transform: scale(1.1, 1.1);
+  }
+}
+
+@keyframes bigger {
+  0% {
     transform: scale(1, 1);
+  }
+
+  100% {
+    transform: scale(1.1, 1.1);
   }
 }
 
